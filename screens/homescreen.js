@@ -8,9 +8,11 @@ const HomeScreen = () => {
     const navigation = useNavigation();
 
     const handleSignout = () => {
+        const userEmail = auth.currentUser?.email;
         auth
         .signOut()
         .then(() => {
+            console.log('Logged out of account: ' + userEmail);
             navigation.replace('Login')
         })
         .catch(error => alert(error.message))

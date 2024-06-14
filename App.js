@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeScreen from './screens/homescreen';
-import LoginScreen from './screens/loginscreen';
+import LoginScreen from './app/(auth)/loginscreen';
 
 const Stack = createNativeStackNavigator();
 

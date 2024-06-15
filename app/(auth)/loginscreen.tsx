@@ -10,10 +10,12 @@ import CustomButton from '../../components/CustomButton';
 
 const LoginScreen = () => {
 
+    const auth = getAuth();
+
     const [form, setForm] = useState({
         email: '',
         password: ''
-    })
+    });
 
     const handleError = (errorCode: any) => {
         switch (errorCode) {
@@ -39,9 +41,10 @@ const LoginScreen = () => {
     }, [])
 
     const handleLogin = () => {
-        signInWithEmailAndPassword(getAuth(), form.email, form.password)
-        .then((user) => {
-            if (user) router.replace("/home")
+        signInWithEmailAndPassword(auth, form.email, form.password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            router.replace('/home');
             console.log('Logged in with: ' + form.email);
         })
         .catch(error => alert(handleError(error.code)))

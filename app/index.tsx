@@ -31,7 +31,7 @@ export default function App() {
               title="Log In"
               handlePress={() => { router.push('/loginscreen')} }
               containerStyles="bg-white w-[140px] mt-7 mr-5"
-              textStyles={`text-l text-primary`}
+              textStyles={`text-l font-Consolas font-semibold text-primary`}
               isLoading={undefined}          
             />
 
@@ -39,7 +39,7 @@ export default function App() {
               title="Sign Up"
               handlePress={() => { router.push('/registerscreen')} }
               containerStyles="bg-white w-[140px] mt-7"
-              textStyles={`text-l text-primary`}
+              textStyles={`text-l font-Consolas font-semibold text-primary`}
               isLoading={undefined}          
             />
           </View>
@@ -55,27 +55,3 @@ export default function App() {
     </SafeAreaView>
   );
 }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     alignItems: "center",
-//     justifyContent: "center",
-//     padding: 24,
-//   },
-//   main: {
-//     flex: 1,
-//     justifyContent: "center",
-//     maxWidth: 960,
-//     marginHorizontal: "auto",
-//   },
-//   title: {
-//     fontSize: 32,
-//     alignItems: "center",
-//     fontWeight: "bold",
-//   },
-//   subtitle: {
-//     fontSize: 36,
-//     color: "#38434D",
-//   },
-// });

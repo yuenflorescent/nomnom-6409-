@@ -1,6 +1,6 @@
 import { SafeAreaView, ScrollView, KeyboardAvoidingView, StyleSheet, Text, TextInput, TouchableOpacity, View, Image, ImageBackground } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, getAuth} from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth} from 'firebase/auth';
 import { router } from 'expo-router';
 
 //importing custom components 
@@ -9,6 +9,8 @@ import CustomButton from '../../components/CustomButton';
 
 
 const RegisterScreen = () => {
+
+    const auth = getAuth();
 
     const [form, setForm] = useState({
         email: '',
@@ -39,9 +41,10 @@ const RegisterScreen = () => {
     }, [])
 
     const handleSignup = () => {
-        createUserWithEmailAndPassword(getAuth(), form.email, form.password)
-        .then((user) => {
-            if (user) router.replace("/home") // cannot seem to navigate to the main folder /(tabs)
+        createUserWithEmailAndPassword(auth, form.email, form.password)
+        .then((userCredential) => {
+            const user = userCredential.user;
+            router.replace("/home");
             console.log('Registered with: ' + form.email);
         })
         .catch(error => alert(handleError(error.code)))

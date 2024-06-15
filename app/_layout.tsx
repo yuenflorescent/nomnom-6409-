@@ -9,24 +9,28 @@ import "../global.css"
 import { useFonts } from 'expo-font'
 import { FONTFAMILY } from "./themes";
 
+// firebase initialization
 import { getReactNativePersistence, initializeAuth } from "firebase/auth";
+import firebase from 'firebase/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
 import { initializeApp } from 'firebase/app'
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage'
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, setDoc } from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCigU63kn2Fjjn0mzKkF4-oWJyeCsdKWrs",
-  authDomain: "nomnom-authentification.firebaseapp.com",
-  projectId: "nomnom-authentification",
-  storageBucket: "nomnom-authentification.appspot.com",
-  messagingSenderId: "136424992640",
-  appId: "1:136424992640:web:55eb07d9a24fb0f454db65",
-  measurementId: "G-CJV6SDRKML"
-};
+    apiKey: "AIzaSyCigU63kn2Fjjn0mzKkF4-oWJyeCsdKWrs",
+    authDomain: "nomnom-authentification.firebaseapp.com",
+    projectId: "nomnom-authentification",
+    storageBucket: "nomnom-authentification.appspot.com",
+    messagingSenderId: "136424992640",
+    appId: "1:136424992640:web:55eb07d9a24fb0f454db65",
+    measurementId: "G-CJV6SDRKML"
+  };
 
-const app = initializeApp(firebaseConfig);
-initializeAuth(app, {
-  persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-});
+const app = initializeApp(firebaseConfig)
+const db = getFirestore(app);
+const auth = getAuth(app);
 
 const RootLayout = () => {
   const [fontsLoaded, error] = useFonts ({
@@ -50,4 +54,4 @@ const RootLayout = () => {
 }
 
 export default RootLayout
-export { firebaseConfig }
+export { db, auth }

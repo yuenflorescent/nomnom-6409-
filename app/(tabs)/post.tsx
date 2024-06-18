@@ -19,7 +19,8 @@ const Post = () => {
   const [form, setForm] = useState({
     image: '',
     title: '',
-    caption: ''
+    caption: '',
+    address: '',
   })
 
   const pickImage = async() => {
@@ -108,7 +109,8 @@ const Post = () => {
       ({
         image: '',
         title: '',
-        caption: ''
+        caption: '',
+        address: '',
       });
       router.push('/home');
       }
@@ -138,7 +140,7 @@ const Post = () => {
       <FormField 
       title='Title Your Review' 
       value= {form.title}
-      placeholder= 'Write Something Cool...'
+      placeholder= 'Give your review a title!'
       handleChangeText={(e: string) => setForm({ ...form, title: e })}
       otherStyles={undefined} 
       />
@@ -146,7 +148,15 @@ const Post = () => {
       <FormField 
       title='Review Your Nom' 
       value= {form.caption}
-      placeholder= 'Write Something Cool...'
+      placeholder= 'Tell people how you feel about this place!'
+      handleChangeText={(e: string) => setForm({ ...form, caption: e })}
+      otherStyles= "mt-5"
+      />
+
+      <FormField 
+      title='Address (Optional)' 
+      value= {form.caption}
+      placeholder= ''
       handleChangeText={(e: string) => setForm({ ...form, caption: e })}
       otherStyles= "mt-5"
       />

@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { Link, Redirect, router } from "expo-router";
 import  CustomButton from "../components/CustomButton";
 
-export default function App() {
+function App() {
   return (
     <SafeAreaView className="bg-primary h-full">
       
@@ -55,3 +55,5 @@ export default function App() {
     </SafeAreaView>
   );
 }
+
+export default App;

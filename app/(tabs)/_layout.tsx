@@ -2,6 +2,7 @@ import { View, Text } from 'react-native'
 import React, { useState } from 'react'
 import { Tabs, Redirect, router } from 'expo-router'
 import { getAuth } from 'firebase/auth'
+import { AntDesign } from '@expo/vector-icons';
 
 const TabsLayout = () => {
   const [isLoading, setisLoading] = useState(true);
@@ -31,14 +32,37 @@ const TabsLayout = () => {
           options={{
             title: "Home",
             headerShown: false,
+            tabBarIcon: ({size, focused, color}) => (
+              <AntDesign name="home" size={size} color={color} />)
           }}
         />
 
         <Tabs.Screen
           name="post"
           options={{
-            title: "Post",
+            title: "Create Post",
             headerShown: false,
+            tabBarIcon: ({size, focused, color}) => (
+              <AntDesign name="plussquare" size={size} color='orange' />)
+          }}
+        />
+
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Profile",
+            headerShown: false,
+            tabBarIcon: ({size, focused, color}) => (
+              <AntDesign name="user" size={size} color={color} />)
+          }}
+        />
+
+        <Tabs.Screen
+          name = "postdetails"
+          options ={{
+            title: "Post Details",
+            headerShown: false,
+            tabBarButton: () => null,
           }}
         />
       </Tabs>

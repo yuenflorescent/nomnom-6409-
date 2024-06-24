@@ -19,13 +19,12 @@ const TabsLayout = () => {
   return (
     <>
       <Tabs
-        screenOptions={{
+        screenOptions={({ route }) => ({
           tabBarShowLabel: true,
           tabBarActiveTintColor: '#B3541E',
           tabBarStyle: {
-            backgroundColor: '#461111'
-          }
-        }}
+            backgroundColor: '#461111',
+          }})}
       >
         <Tabs.Screen
           name="home"

@@ -1,6 +1,8 @@
 import { View, Text, KeyboardAvoidingView, TouchableOpacity, Image, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { router } from 'expo-router'
+import uuid from 'react-native-uuid'; // Import react-native-uuid
+
 
 //importing custom components 
 import FormField from '../../components/FormField';
@@ -21,6 +23,7 @@ const Post = () => {
     title: '',
     caption: '',
     address: '',
+    likes: 0,
   })
 
   const pickImage = async() => {
@@ -42,7 +45,8 @@ const Post = () => {
     }
     
     const storage = getStorage();
-    const storageRef = ref(storage, `${auth.currentUser?.uid}-${serverTimestamp()}`);
+    const uniqueImageName = `${auth.currentUser?.uid}-${uuid.v4()}`; // Create a unique identifier
+    const storageRef = ref(storage, uniqueImageName);
 
     const getBlobFroUri = async (uri: string) => {
       const blob: Blob = await new Promise((resolve, reject) => {
@@ -101,6 +105,8 @@ const Post = () => {
           image: form.image,
           title: form.title,
           caption: form.caption,
+          address: form.address,
+          likes: form.likes,
           post_time: serverTimestamp()
         })
         console.log("Success!", docRef.id);
@@ -111,6 +117,7 @@ const Post = () => {
         title: '',
         caption: '',
         address: '',
+        likes: 0,
       });
       router.push('/home');
       }
@@ -155,9 +162,9 @@ const Post = () => {
 
       <FormField 
       title='Address (Optional)' 
-      value= {form.caption}
+      value= {form.address}
       placeholder= ''
-      handleChangeText={(e: string) => setForm({ ...form, caption: e })}
+      handleChangeText={(e: string) => setForm({ ...form, address: e })}
       otherStyles= "mt-5"
       />
 

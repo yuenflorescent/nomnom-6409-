@@ -2,6 +2,9 @@ import { SafeAreaView, ScrollView, KeyboardAvoidingView, StyleSheet, Text, TextI
 import React, { useEffect, useState } from 'react'
 import { createUserWithEmailAndPassword, getAuth} from 'firebase/auth';
 import { router } from 'expo-router';
+import { collection, doc, setDoc, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../_layout';
+
 
 //importing custom components 
 import FormField from '../../components/FormField';
@@ -14,7 +17,8 @@ const RegisterScreen = () => {
 
     const [form, setForm] = useState({
         email: '',
-        password: ''
+        password: '',
+        username: '',
     })
 
     const handleError = (errorCode: any) => {
@@ -40,15 +44,34 @@ const RegisterScreen = () => {
         return unsubscribe;
     }, [])
 
-    const handleSignup = () => {
-        createUserWithEmailAndPassword(auth, form.email, form.password)
-        .then((userCredential) => {
+    const handleSignup = async () => {
+        try {
+            // Check if the username already exists
+            const usernameQuery = query(collection(db, 'users'), where('username', '==', form.username));
+            const usernameSnapshot = await getDocs(usernameQuery);
+
+            if (!usernameSnapshot.empty) {
+                alert('Username is already taken. Please choose another one.');
+                return;
+            }
+
+            // Create user account
+            const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password);
             const user = userCredential.user;
+
+            // Store the username in Firestore
+            await setDoc(doc(db, 'users', user.uid), {
+                username: form.username,
+                email: form.email
+            });
+
             router.replace("/home");
             console.log('Registered with: ' + form.email);
-        })
-        .catch(error => alert(handleError(error.code)))
-    }
+        } catch (error) {
+            console.log(error);
+            alert(handleError(error.code));
+        }
+    };
 
   return (
     <KeyboardAvoidingView 
@@ -78,6 +101,14 @@ const RegisterScreen = () => {
               title='Password' 
               value={form.password} 
               handleChangeText={(e: string) => setForm({ ...form, password: e })} 
+              placeholder={undefined} 
+              otherStyles="mt-7"           
+          />
+
+          <FormField 
+              title='Username' 
+              value={form.username} 
+              handleChangeText={(e: string) => setForm({ ...form, username: e })} 
               placeholder={undefined} 
               otherStyles="mt-7"           
           />

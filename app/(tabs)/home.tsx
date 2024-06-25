@@ -1,11 +1,21 @@
 import { View, Text, SafeAreaView, Image, FlatList, StyleSheet, TouchableOpacity } from 'react-native'
-import { db } from '../_layout'
-import { collection, query, getDocs, orderBy, limit } from "firebase/firestore"
+import { db, auth } from '../_layout'
+import { collection, query, getDocs, orderBy, limit, doc, addDoc, deleteDoc, updateDoc, where } from "firebase/firestore"
 import React, { useEffect, useState } from 'react'
 import { router } from 'expo-router';
+import { AntDesign } from '@expo/vector-icons';
+
+// Define the Post type
+interface Post {
+  id: string;
+  url: string;
+  title: string;
+  likes: number;
+}
 
 const Home = () => {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
 
   const fetchPosts = async () => {
     var arr: any = []
@@ -15,14 +25,74 @@ const Home = () => {
 
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
-      arr.push(doc.data())
+      arr.push({ id: doc.id, ...doc.data()})
     });
     setPosts(arr)
+
+    // Fetch liked posts
+    if (auth.currentUser) {
+      const likesQuery = query(collection(db, 'likes'), where('userId', '==', auth.currentUser.uid));
+      const likesSnapshot = await getDocs(likesQuery);
+      const likedPosts: { [key: string]: boolean } = {};
+      likesSnapshot.forEach((doc) => {
+        likedPosts[doc.data().postId] = true;
+      });
+      setLikedPosts(likedPosts);
+    }
   };
 
   useEffect(() => {
     fetchPosts();
   }, [])
+
+  const handleLikePress = async (postId: string) => {
+    const user = auth.currentUser;
+    if (!user) {
+      alert('You need to be logged in to like posts.');
+      return;
+    }
+
+    const postIndex = posts.findIndex(post => post.id === postId);
+    if (postIndex !== -1) {
+      const updatedPosts = [...posts];
+      const isLiked = likedPosts[postId];
+
+      if (isLiked) {
+        // Unlike the post
+        const likeQuery = query(collection(db, 'likes'), where('userId', '==', user.uid), where('postId', '==', postId));
+        const likeSnapshot = await getDocs(likeQuery);
+        if (!likeSnapshot.empty) {
+          await deleteDoc(doc(db, 'likes', likeSnapshot.docs[0].id));
+          const updatedLikes = updatedPosts[postIndex].likes - 1;
+          updatedPosts[postIndex].likes = updatedLikes;
+          setPosts(updatedPosts);
+          setLikedPosts((prev) => ({ ...prev, [postId]: false }));
+
+          // Update likes in Firestore
+          const postRef = doc(db, 'posts', postId);
+          await updateDoc(postRef, {
+            likes: updatedLikes
+          });
+        }
+      } else {
+        // Like the post
+        await addDoc(collection(db, 'likes'), {
+          userId: user.uid,
+          postId: postId
+        });
+        const updatedLikes = updatedPosts[postIndex].likes + 1;
+        updatedPosts[postIndex].likes = updatedLikes;
+        setPosts(updatedPosts);
+        setLikedPosts((prev) => ({ ...prev, [postId]: true }));
+
+        // Update likes in Firestore
+        const postRef = doc(db, 'posts', postId);
+        await updateDoc(postRef, {
+          likes: updatedLikes
+        });
+      }
+    }
+  };
 
   return (
     // <SafeAreaView>
@@ -30,23 +100,34 @@ const Home = () => {
     //     Recents
     //   </Text>
 
-      <FlatList
-          data = {posts}
-          renderItem={({ item }: {item: any}) => (
-              <TouchableOpacity onPress= {() => router.push({ pathname: '/postdetails', params: item })}> 
-                  <View style = {styles.imageContainer}>
-                    <Image source={{uri: item.url}} style = {styles.image}/>
-                  </View>
-                  <View style = {styles.textContainer}>
-                    <Text style = {styles.title}>{item.title}</Text>
-                  </View>
+    <FlatList
+        data={posts}
+        renderItem={({ item }: {item : any}) => (
+          <View>
+            <View style={styles.postContainer}>
+              <TouchableOpacity onPress={() => router.push({ pathname: '/postdetails', params: item })}>
+                  <Image source={{ uri: item.url }} style={styles.image} />
               </TouchableOpacity>
-          )}
-          keyExtractor={(item, index) => index.toString()}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={styles.flatListContent}
-          />
+              <View style={styles.textContainer}>
+                <Text style={styles.title}>{item.title}</Text>
+                <TouchableOpacity onPress={() => handleLikePress(item.id)}>
+                  <AntDesign
+                    name={likedPosts[item.id] ? "heart" : "hearto"}
+                    size={24}
+                    color={likedPosts[item.id] ? "red" : "black"}
+                    style={styles.heartIcon}
+                  />
+                  <Text>{item.likes}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+        keyExtractor={(item) => item.id}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.flatListContent}
+      />
     // </SafeAreaView>
   )
 }
@@ -60,7 +141,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-evenly',
   },
-  imageContainer: {
+  postContainer: {
     flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
@@ -70,8 +151,11 @@ const styles = StyleSheet.create({
     width: 180,
   },
   textContainer: {
-    alignItems:'flex-start',
-    width: 180,
+    alignItems:'center',
+    width: 140,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderWidth: 0
   },
   image: {
     width: 180,
@@ -83,6 +167,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 12,
     textAlign: 'left',
-
   },
+  heartIcon: {
+    
+  }
 })

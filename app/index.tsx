@@ -13,7 +13,7 @@ function App() {
 
           <Image
             source={require('../assets/Banhmi_2.png')}
-            className="w-full h-[250px] mt-40"
+            className="w-full h-[250px] mt-40 ml-4"
             resizeMode="contain"
           />
 

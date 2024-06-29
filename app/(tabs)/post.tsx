@@ -1,4 +1,4 @@
-import { View, Text, KeyboardAvoidingView, TouchableOpacity, Image, Alert } from 'react-native'
+import { View, Text, KeyboardAvoidingView, TouchableOpacity, Image, Alert, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import { router } from 'expo-router'
 import uuid from 'react-native-uuid'; // Import react-native-uuid
@@ -126,8 +126,7 @@ const Post = () => {
 
   return (
 
-    <KeyboardAvoidingView className="bg-primary h-full items-center">
-
+    <KeyboardAvoidingView behavior = 'padding' keyboardVerticalOffset={400} className="bg-primary h-full items-center">
         {form.image !== '' ? (
           <Image
             className="mt-10 mb-10 w-2/3 h-1/3 rounded-xl"

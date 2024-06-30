@@ -26,7 +26,7 @@ const LoginScreen = () => {
             case 'auth/email-already-in-use':
                 return 'Email has a registered account already.';
             default:
-                 return {errorCode} + 'An unknown error occurred.';
+                 return JSON.stringify(errorCode) + 'An unknown error occurred.';
         }
     }
 

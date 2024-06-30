@@ -3,26 +3,31 @@ import React, { useState } from 'react'
 import { AntDesign } from '@expo/vector-icons';
 import { router, usePathname } from 'expo-router';
 
-const searchbar = ({initialQuery} : {initialQuery: string}) => {
+const searchbar = ({initialQuery} : {initialQuery: any}) => {
     const pathname = usePathname();
-    const [query, setQuery] = useState(initialQuery || '')
+    const [userQuery, setQuery] = useState(initialQuery || '')
 
   return (
-    <View className='flex-1 w-full rounded-2xl bg-gray'> 
       <TouchableOpacity
       onPress={()=>{
-        if (query === '') return Alert.alert("Type Something In")
-        if (pathname.startsWith("/Search")) router.setParams({ query })
-        else router.push(`/search/${query}`)
+        if (userQuery === '') return Alert.alert("Type Something In")
+        else {
+          if (!pathname.startsWith("/search")) {
+            {router.push(`/search/${userQuery}`);}
+          }
+          router.setParams({ userQuery })
+        }
       }}
+      className='self-center items-center justify-center flex-row flex-1 h-16 w-11/12 rounded-xl bg-white mt-5'
       >
-        <TextInput 
+      
+      <TextInput 
       placeholder='look something up!'
       onChangeText={(e) => setQuery(e)}
+      className='mr-24 font-Monaco'
       />
-        <AntDesign name="search1" backgroundColor="gray" size={12}/>
+        <AntDesign name="search1" size={12} className='ml-32'/>
     </TouchableOpacity>
-    </View>
   )
 }
 

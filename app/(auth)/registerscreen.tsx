@@ -67,7 +67,7 @@ const RegisterScreen = () => {
 
             router.replace("/home");
             console.log('Registered with: ' + form.email);
-        } catch (error) {
+        } catch (error: any) {
             console.log(error);
             alert(handleError(error.code));
         }

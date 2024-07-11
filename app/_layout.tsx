@@ -7,7 +7,7 @@ import "../global.css"
 
 // importing custom fonts into the app
 import { useFonts } from 'expo-font'
-import { FONTFAMILY } from "./themes";
+import { FONTFAMILY } from "./utils/themes";
 
 // firebase initialization
 import { getReactNativePersistence, initializeAuth } from "firebase/auth";
@@ -49,6 +49,8 @@ const RootLayout = () => {
   return (
   <Stack>
     <Stack.Screen name= "index" options={{headerShown: false}} />
+    <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    <Stack.Screen name="(auth)" options={{ headerShown: false }} />
   </Stack>
   )
 }

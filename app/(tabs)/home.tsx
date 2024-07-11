@@ -1,9 +1,10 @@
-import { View, Text, SafeAreaView, Image, FlatList, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, Image, FlatList, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native'
 import { db, auth } from '../_layout'
-import { collection, query, getDocs, orderBy, limit, doc, addDoc, deleteDoc, updateDoc, where } from "firebase/firestore"
+import { collection, query, getDocs, orderBy, limit, doc, addDoc, deleteDoc, updateDoc, where, getDoc } from "firebase/firestore"
 import React, { useEffect, useState } from 'react'
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
+import SearchBar from '../../components/SearchBar';
 
 // Define the Post type
 interface Post {
@@ -15,17 +16,22 @@ interface Post {
 
 const Home = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
   const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
 
   const fetchPosts = async () => {
-    var arr: any = []
+    const arr: any = []
     const q = query(
       collection(db, 'posts'), orderBy("post_time", "desc"), limit(10)
       )
 
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
-      arr.push({ id: doc.id, ...doc.data()})
+      arr.push({ id: doc.id, ...doc.data()});
+      // const ind: number = arr.findIndex((p: { id: string; }) => p.id === doc.id)
+      // updateDoc(doc.ref, {
+      //   searchQueries: arr[ind].title.trim().split(" ").map((s: string) => s.toLowerCase()),
+      // })
     });
     setPosts(arr)
 
@@ -44,6 +50,14 @@ const Home = () => {
   useEffect(() => {
     fetchPosts();
   }, [])
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchPosts();
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1000)
+};
 
   const handleLikePress = async (postId: string) => {
     const user = auth.currentUser;
@@ -95,11 +109,7 @@ const Home = () => {
   };
 
   return (
-    // <SafeAreaView>
-    //   <Text className='font-Consolas font-bold text-3xl ml-7 mt-7 mb-5'>
-    //     Recents
-    //   </Text>
-
+    <>
     <FlatList
         data={posts}
         renderItem={({ item }: {item : any}) => (
@@ -122,13 +132,19 @@ const Home = () => {
               </View>
             </View>
           </View>
-        )}
+        )
+      }
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.flatListContent}
+        ListHeaderComponent={() => (
+          <SearchBar initialQuery={''} />
+        )}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
+      }
       />
-    // </SafeAreaView>
+    </>
   )
 }
 

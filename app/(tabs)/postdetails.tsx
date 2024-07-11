@@ -7,9 +7,9 @@ import { db, auth } from '../_layout';
 
 export default function PostDetails({  }) {
 
-    const item = useLocalSearchParams();
+    const item: any = useLocalSearchParams();
     const [comment, setComment] = useState('');
-    const [comments, setComments] = useState([]);
+    const [comments, setComments]: any = useState([]);
 
     const fetchComments = async () => {
       try {
@@ -57,8 +57,8 @@ export default function PostDetails({  }) {
 
     return (
       <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={80}>
+        <Ionicons name="arrow-back-circle" size={40} color="orange" style = {styles.back} onPress={() => router.replace('/home')}/>
         <ScrollView>
-          <Ionicons name="arrow-back-circle" size={40} color="orange" style = {styles.back} onPress={() => router.replace('/home')}/>
           <View style = {styles.imageContainer}>
             <Image source={{uri: item.url}} style = {styles.image}/>
           </View>
@@ -67,33 +67,34 @@ export default function PostDetails({  }) {
             <Text style = {styles.address}>Address: { item.address }</Text>
             <Text>{ item.caption } </Text>
           </View>
+          </ScrollView>
 
           <View style={styles.commentSection}>
                 <Text style={styles.commentTitle}>Comments</Text>
                 <FlatList
                     data={comments}
-                    keyExtractor={(item) => item.id}
+                    keyExtractor={(item: any) => item.id}
                     renderItem={({ item }) => (
                         <View style={styles.comment}>
                             <Text style={styles.commentUser}>{item.username}:</Text>
                             <Text>{item.comment}</Text>
                         </View>
                     )}
+                    ListFooterComponent={() => (
+                      <View style={styles.commentInputSection}>
+                      <TextInput
+                          style={styles.commentInput}
+                          placeholder="Add a comment..."
+                          value={comment}
+                          onChangeText={setComment}
+                      />
+                      <Pressable style = {styles.button} onPress={handleCommentSubmit}>
+                        <Text style = {styles.buttonText}>Post</Text>
+                      </Pressable>
+                  </View>
+                    )}
                 />
             </View>
-
-          <View style={styles.commentInputSection}>
-                <TextInput
-                    style={styles.commentInput}
-                    placeholder="Add a comment..."
-                    value={comment}
-                    onChangeText={setComment}
-                />
-                <Pressable style = {styles.button} onPress={handleCommentSubmit}>
-                  <Text style = {styles.buttonText}>Post</Text>
-                </Pressable>
-            </View>
-        </ScrollView>
         </KeyboardAvoidingView>
     )
 }

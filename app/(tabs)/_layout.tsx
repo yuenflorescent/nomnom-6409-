@@ -1,6 +1,6 @@
 import { View, Text } from 'react-native'
 import React, { useState } from 'react'
-import { Tabs, Redirect, router } from 'expo-router'
+import { Tabs, Redirect, router, usePathname, useSegments } from 'expo-router'
 import { getAuth } from 'firebase/auth'
 import { AntDesign } from '@expo/vector-icons';
 
@@ -20,7 +20,7 @@ const TabsLayout = () => {
     <>
       <Tabs
         screenOptions={({ route }) => ({
-          tabBarShowLabel: true,
+          tabBarShowLabel: false,
           tabBarActiveTintColor: '#B3541E',
           tabBarStyle: {
             backgroundColor: '#461111',

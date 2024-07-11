@@ -18,7 +18,7 @@ const searchbar = ({initialQuery} : {initialQuery: any}) => {
           router.setParams({ userQuery })
         }
       }}
-      className='self-center items-center justify-center flex-row flex-1 h-16 w-11/12 rounded-xl bg-white mt-5'
+      className='self-center items-center justify-center flex-row flex-1 h-16 w-11/12 rounded-xl bg-white mt-14'
       >
       
       <TextInput 

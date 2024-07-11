@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Image, FlatList, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native'
 import { db, auth } from '../_layout'
-import { collection, query, getDocs, orderBy, limit, doc, addDoc, deleteDoc, updateDoc, where } from "firebase/firestore"
+import { collection, query, getDocs, orderBy, limit, doc, addDoc, deleteDoc, updateDoc, where, getDoc } from "firebase/firestore"
 import React, { useEffect, useState } from 'react'
 import { router, useFocusEffect } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
@@ -20,14 +20,18 @@ const Home = () => {
   const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
 
   const fetchPosts = async () => {
-    var arr: any = []
+    const arr: any = []
     const q = query(
       collection(db, 'posts'), orderBy("post_time", "desc"), limit(10)
       )
 
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
-      arr.push({ id: doc.id, ...doc.data()})
+      arr.push({ id: doc.id, ...doc.data()});
+      // const ind: number = arr.findIndex((p: { id: string; }) => p.id === doc.id)
+      // updateDoc(doc.ref, {
+      //   searchQueries: arr[ind].title.trim().split(" ").map((s: string) => s.toLowerCase()),
+      // })
     });
     setPosts(arr)
 

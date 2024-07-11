@@ -25,8 +25,8 @@ const Search = () => {
 
   const searchPosts = async (input:any) => {
     const arr: any = []
-    // will need to implement a more complex variant of <where("title", "<=", input + "\uf8ff")>
-    const q = query(postsRef, where("title", ">=", input));
+    const refinedQuery: string[] = input.toLowerCase().split("|").slice(0, 20)
+    const q = query(postsRef, where("searchQueries", "array-contains-any", refinedQuery));
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
       arr.push({ id: doc.id, ...doc.data()})

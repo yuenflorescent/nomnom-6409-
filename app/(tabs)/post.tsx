@@ -24,6 +24,7 @@ const Post = () => {
     caption: '',
     address: '',
     likes: 0,
+    searchQueries: []
   })
 
   const pickImage = async() => {
@@ -107,7 +108,8 @@ const Post = () => {
           caption: form.caption,
           address: form.address,
           likes: form.likes,
-          post_time: serverTimestamp()
+          post_time: serverTimestamp(),
+          searchQueries: form.title.trim().split(" ").map(s => s.toLowerCase()),
         })
         console.log("Success!", docRef.id);
       });

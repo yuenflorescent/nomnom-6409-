@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { Tabs, Redirect, router, usePathname, useSegments } from 'expo-router'
 import { getAuth } from 'firebase/auth'
 import { AntDesign } from '@expo/vector-icons';
+import TabBar from '../../components/TabBar';
 
 const TabsLayout = () => {
   const [isLoading, setisLoading] = useState(true);
@@ -19,20 +20,21 @@ const TabsLayout = () => {
   return (
     <>
       <Tabs
-        screenOptions={({ route }) => ({
-          tabBarShowLabel: false,
-          tabBarActiveTintColor: '#B3541E',
-          tabBarStyle: {
-            backgroundColor: '#461111',
-          }})}
+          tabBar={props =>  <TabBar {...props}/>}
+        // screenOptions={({ route }) => ({
+        //   tabBarShowLabel: false,
+        //   tabBarActiveTintColor: '#B3541E',
+        //   tabBarStyle: {
+        //     backgroundColor: '#461111',
+        //   }})}
       >
         <Tabs.Screen
           name="home"
           options={{
             title: "Home",
             headerShown: false,
-            tabBarIcon: ({size, focused, color}) => (
-              <AntDesign name="home" size={size} color={color} />)
+            // tabBarIcon: ({size, focused, color}) => (
+            //   <AntDesign name="home" size={size} color={color} />)
           }}
         />
 
@@ -41,8 +43,8 @@ const TabsLayout = () => {
           options={{
             title: "Create Post",
             headerShown: false,
-            tabBarIcon: ({size, focused, color}) => (
-              <AntDesign name="plussquare" size={size} color='orange' />)
+            // tabBarIcon: ({size, focused, color}) => (
+            //   <AntDesign name="plussquare" size={size} color='orange' />)
           }}
         />
 
@@ -51,8 +53,8 @@ const TabsLayout = () => {
           options={{
             title: "Profile",
             headerShown: false,
-            tabBarIcon: ({size, focused, color}) => (
-              <AntDesign name="user" size={size} color={color} />)
+            // tabBarIcon: ({size, focused, color}) => (
+            //   <AntDesign name="user" size={size} color={color} />)
           }}
         />
 
@@ -61,7 +63,9 @@ const TabsLayout = () => {
           options ={{
             title: "Post Details",
             headerShown: false,
+            tabBarStyle: {display: 'none'},
             tabBarButton: () => null,
+            tabBarVisible: false,
           }}
         />
       </Tabs>

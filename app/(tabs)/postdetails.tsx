@@ -106,7 +106,8 @@ const styles = StyleSheet.create({
     },
     back: {
       paddingLeft: 18,
-      paddingBottom: 20
+      paddingBottom: 20,
+      marginTop: 25,
     },
     imageContainer: {
       alignItems: 'center'

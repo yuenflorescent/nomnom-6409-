@@ -137,10 +137,10 @@ const Post = () => {
           />
         ) : (
           <CustomButton 
-          title= "Pick Something From Your Gallery..."
+          title= "Click to Import Image!"
           handlePress= {pickImage}
-          containerStyles= "mt-10 mb-10 w-2/3 h-1/3 rounded-xl bg-secondary"
-          textStyles= "text-2xl font-OutfitBold text-white"
+          containerStyles= "mt-16 mb-10 w-2/3 h-1/3 p-10 rounded-xl bg-orange"
+          textStyles= "text-2xl text-center font-Black text-white"
           isLoading={undefined}        
         />         
         )}
@@ -170,10 +170,10 @@ const Post = () => {
       />
 
       <CustomButton 
-      title= "Post" 
+      title= "POST" 
       handlePress={uploadPost} 
-      containerStyles= "w-5/6" 
-      textStyles= "text-white" 
+      containerStyles= "mt-10 w-2/6 bg-orange" 
+      textStyles= "text-white font-black" 
       isLoading={undefined}
       />
 

@@ -1,10 +1,11 @@
 import { View, Text, ScrollView, Image, FlatList, StyleSheet, TouchableOpacity, RefreshControl } from 'react-native'
 import { db, auth } from '../_layout'
 import { collection, query, getDocs, orderBy, limit, doc, addDoc, deleteDoc, updateDoc, where, getDoc } from "firebase/firestore"
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { router, useFocusEffect } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
-import SearchBar from '../../components/SearchBar';
+import { Ionicons } from '@expo/vector-icons';
+
 
 // Define the Post type
 interface Post {
@@ -19,45 +20,47 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
 
-  const fetchPosts = async () => {
-    const arr: any = []
-    const q = query(
-      collection(db, 'posts'), orderBy("post_time", "desc"), limit(10)
-    )
+ 
+  const fetchBookmarkedPosts = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const q = query(collection(db, 'bookmarks'), where('userId', '==', user.uid));
+      const querySnapshot = await getDocs(q);
+      const bookmarkedPostIDs = querySnapshot.docs.map(doc => doc.data().postId);
+      
+      const postPromises = bookmarkedPostIDs.map(async (postId) => {
+        const postDoc = await getDoc(doc(db, 'posts', postId));
+        return { id: postId, ...postDoc.data() } as Post;
+      });
 
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      arr.push({ id: doc.id, ...doc.data() });
-      // const ind: number = arr.findIndex((p: { id: string; }) => p.id === doc.id)
-      // updateDoc(doc.ref, {
-      //   searchQueries: arr[ind].title.trim().split(" ").map((s: string) => s.toLowerCase()),
-      // })
-    });
-    setPosts(arr)
+      const postsData = await Promise.all(postPromises);
+      setPosts(postsData);
 
-    // Fetch liked posts
-    if (auth.currentUser) {
-      const likesQuery = query(collection(db, 'likes'), where('userId', '==', auth.currentUser.uid));
+      // Fetch liked posts
+      const likesQuery = query(collection(db, 'likes'), where('userId', '==', user.uid));
       const likesSnapshot = await getDocs(likesQuery);
       const likedPosts: { [key: string]: boolean } = {};
       likesSnapshot.forEach((doc) => {
         likedPosts[doc.data().postId] = true;
       });
       setLikedPosts(likedPosts);
-    }
-  };
+      }
+    };
 
-  useEffect(() => {
-    fetchPosts();
-  }, [])
+    useFocusEffect(
+      useCallback(() => {
+        fetchBookmarkedPosts();
+      }, [])
+    );
+
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchPosts();
+    fetchBookmarkedPosts();
     setTimeout(() => {
       setRefreshing(false);
     }, 1000)
-  };
+};
 
   const handleLikePress = async (postId: string) => {
     const user = auth.currentUser;
@@ -109,53 +112,59 @@ const Home = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View>
+      <View style = {styles.header}>
+        <Ionicons name="arrow-back" size={28} color="white" style = {styles.back} onPress={() => router.replace('/profile')}/>
+        <Text className='text-2xl text-white font-extrabold'>Bookmarks</Text>
+      </View>
       <FlatList
-        data={posts}
-        renderItem={({ item }: { item: any }) => (
-          <View>
-            <View style={styles.postContainer}>
-              <TouchableOpacity onPress={() => router.push({ pathname: '/postdetails', params: item })}>
-                <Image source={{ uri: item.url }} style={styles.image} />
-              </TouchableOpacity>
-              <View style={styles.textContainer}>
-                <Text style={styles.title}>{item.title}</Text>
-                <TouchableOpacity onPress={() => handleLikePress(item.id)}>
-                  <View style = {styles.heartAndLikes}>
-                  <AntDesign
-                    name={likedPosts[item.id] ? "heart" : "hearto"}
-                    size={24}
-                    color={likedPosts[item.id] ? "red" : "black"}
-                    style={styles.heartIcon}
-                  />
-                  <Text>{item.likes}</Text>
-                  </View>
+          data={posts}
+          renderItem={({ item }: {item : any}) => (
+            <View>
+              <View style={styles.postContainer}>
+                <TouchableOpacity onPress={() => router.push({ pathname: '/postdetails', params: item })}>
+                    <Image source={{ uri: item.url }} style={styles.image} />
                 </TouchableOpacity>
+                <View style={styles.textContainer}>
+                  <Text style={styles.title}>{item.title}</Text>
+                  <TouchableOpacity onPress={() => handleLikePress(item.id)}>
+                    <AntDesign
+                      name={likedPosts[item.id] ? "heart" : "hearto"}
+                      size={24}
+                      color={likedPosts[item.id] ? "red" : "black"}
+                      style={styles.heartIcon}
+                    />
+                    <Text>{item.likes}</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-
-        )
+          )
         }
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.flatListContent}
-        ListHeaderComponent={() => (
-          <SearchBar initialQuery={''} />
-        )}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.flatListContent}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
         }
-      />
-    </View>
+        />
+      </View>
   )
 }
 
 export default Home
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: 100,
+  header: {
+    flexDirection: 'row',
+    backgroundColor: '#ed800c',
+    paddingTop: 60,
+    paddingLeft: 5,
+    paddingBottom: 6,
+  },
+  back: {
+    marginLeft: 5,
+    marginRight: 10,
   },
   flatListContent: {
   },
@@ -173,7 +182,7 @@ const styles = StyleSheet.create({
     width: 180,
   },
   textContainer: {
-    alignItems: 'center',
+    alignItems:'center',
     width: 140,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -190,10 +199,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'left',
   },
-  heartAndLikes: {
-    flexDirection: 'column',
-    alignItems: 'center',
-  },
   heartIcon: {
+    
   }
 })

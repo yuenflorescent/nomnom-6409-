@@ -67,7 +67,7 @@ const LoginScreen = () => {
                     className="w-[300px] h-[50px] -mt-5"
                 />
                 <Text className='font-OutfitSB text-white text-3xl mb-4 mt-10'>
-                    log In
+                    Login
                 </Text>
             </View>
                 <FormField 

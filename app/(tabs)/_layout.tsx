@@ -65,7 +65,16 @@ const TabsLayout = () => {
             headerShown: false,
             tabBarStyle: {display: 'none'},
             tabBarButton: () => null,
-            tabBarVisible: false,
+          }}
+        />
+
+        <Tabs.Screen
+          name = "bookmarks"
+          options ={{
+            title: "Bookmarks",
+            headerShown: false,
+            tabBarStyle: {display: 'none'},
+            tabBarButton: () => null,
           }}
         />
       </Tabs>

@@ -1,20 +1,36 @@
+
 import React, { useState, useEffect} from "react";
-import { StyleSheet, View, Text, Image, KeyboardAvoidingView, TextInput, FlatList, ScrollView, Pressable } from "react-native";
+import { StyleSheet, View, Text, Image, KeyboardAvoidingView, TextInput, FlatList, ScrollView, Pressable, TouchableOpacity } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
-import { collection, addDoc, query, where, getDocs, serverTimestamp, orderBy, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, serverTimestamp, orderBy, doc, getDoc, deleteDoc } from 'firebase/firestore';
 import { router, useLocalSearchParams } from 'expo-router';
 import { db, auth } from '../_layout';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 export default function PostDetails({  }) {
 
     const item: any = useLocalSearchParams();
     const [comment, setComment] = useState('');
     const [comments, setComments]: any = useState([]);
+    const [isBookmarked, setIsBookmarked] = useState(false);
+
+    const checkBookmarkStatus = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const bookmarkQuery = query(collection(db, 'bookmarks'), where('userId', '==', user.uid), where('postId', '==', item.id));
+          const bookmarkSnapshot = await getDocs(bookmarkQuery);
+          setIsBookmarked(!bookmarkSnapshot.empty);
+        }
+      } catch (error) {
+        console.error('Error checking bookmark status:', error);
+      }
+    };
 
     const fetchComments = async () => {
       try {
-          const q = query(collection(db, 'comments'), where('postID', '==', item.id), orderBy('timestamp', 'desc'));
-          const querySnapshot = await getDocs(q);
+        const q = query(collection(db, 'comments'), where('postID', '==', item.id), orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
           const commentsData = querySnapshot.docs.map(doc => ({
               ...doc.data(),
               id: doc.id,
@@ -27,8 +43,8 @@ export default function PostDetails({  }) {
 
   useEffect(() => {
     fetchComments();
-  }, [item.id]); // Add item.id as a dependency to re-fetch comments when item.id changes
-
+    checkBookmarkStatus();
+  }, [item.id]);
 
   const handleCommentSubmit = async () => {
     if (!comment.trim()) return;
@@ -50,64 +66,122 @@ export default function PostDetails({  }) {
             setComment('');
             fetchComments();
         }
-    } catch (error) {
-        console.error('Error submitting comment:', error);
-    }
-};
+        } catch (error) {
+            console.error('Error submitting comment:', error);
+        }
+    };
 
-    return (
-      <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={80}>
-        <Ionicons name="arrow-back-circle" size={40} color="orange" style = {styles.back} onPress={() => router.replace('/home')}/>
-        <ScrollView>
-          <View style = {styles.imageContainer}>
-            <Image source={{uri: item.url}} style = {styles.image}/>
-          </View>
-          <View style = {styles.textContainer}>
-            <Text style = {styles.title}>{ item.title } </Text>
-            <Text style = {styles.address}>Address: { item.address }</Text>
-            <Text>{ item.caption } </Text>
-          </View>
-          </ScrollView>
+    const handleBookmarkPress = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          alert('You need to be logged in to bookmark posts.');
+          return;
+        }
+  
+        const bookmarkQuery = query(collection(db, 'bookmarks'), where('userId', '==', user.uid), where('postId', '==', item.id));
+        const bookmarkSnapshot = await getDocs(bookmarkQuery);
+  
+        if (!bookmarkSnapshot.empty) { // Already bookmarked
+          // Remove bookmark
+          await deleteDoc(doc(db, 'bookmarks', bookmarkSnapshot.docs[0].id));
+          setIsBookmarked(false);
+        } else { // Not bookmarked
+          // Add bookmark
+          await addDoc(collection(db, 'bookmarks'), {
+            userId: user.uid,
+            postId: item.id,
+          });
+          setIsBookmarked(true);
+        }
+      } catch (error) {
+        console.error('Error handling bookmark:', error);
+      }
+    };
 
-          <View style={styles.commentSection}>
+  return (
+    <>
+      <KeyboardAwareScrollView style = {styles.container}>
+        <View style = {styles.addBottomSpace}>
+      {/* <KeyboardAvoidingView style={styles.container} behavior="padding" keyboardVerticalOffset={80}> */}
+        <View style={styles.header}>
+          <Ionicons name="arrow-back-circle" size={40} color="#ed800c" style={styles.back} onPress={() => router.back()} />
+          <TouchableOpacity>
+            <Ionicons name={isBookmarked ? "bookmark" : "bookmark-outline"} size={30} color={isBookmarked ? "orange" : "black"} style={styles.bookmark} onPress={handleBookmarkPress} />
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+
+          ListHeaderComponent={ // Display post image and details.
+            <>
+              <View style={styles.imageContainer}>
+                <Image source={{ uri: item.url }} style={styles.image} />
+              </View>
+              <View style={styles.textContainer}>
+                <Text style={styles.title}>{item.title} </Text>
+                <Text style={styles.address}>📍Address: {item.address}</Text>
+                <Text>{item.caption} </Text>
+              </View>
+              <View style={styles.commentHeader}>
                 <Text style={styles.commentTitle}>Comments</Text>
-                <FlatList
-                    data={comments}
-                    keyExtractor={(item: any) => item.id}
-                    renderItem={({ item }) => (
-                        <View style={styles.comment}>
-                            <Text style={styles.commentUser}>{item.username}:</Text>
-                            <Text>{item.comment}</Text>
-                        </View>
-                    )}
-                    ListFooterComponent={() => (
-                      <View style={styles.commentInputSection}>
-                      <TextInput
-                          style={styles.commentInput}
-                          placeholder="Add a comment..."
-                          value={comment}
-                          onChangeText={setComment}
-                      />
-                      <Pressable style = {styles.button} onPress={handleCommentSubmit}>
-                        <Text style = {styles.buttonText}>Post</Text>
-                      </Pressable>
-                  </View>
-                    )}
-                />
+              </View>
+            </>}
+
+          // Display comments
+          data={comments}
+          keyExtractor={(item: any) => item.id}
+          renderItem={({ item }) => (
+            <View style={styles.comment}>
+              <Text style={styles.commentUser}>{item.username}:</Text>
+              <Text>{item.comment}</Text>
             </View>
-        </KeyboardAvoidingView>
-    )
+          )}
+        />
+      {/* </KeyboardAvoidingView> */}
+      </View>
+      </KeyboardAwareScrollView>
+
+      {/* Comment input */}
+      <View style={styles.commentInputSection}>
+        <TextInput
+          style={styles.commentInput}
+          placeholder="Add a comment..."
+          value={comment}
+          onChangeText={setComment}
+        />
+        <Pressable style={styles.button} onPress={handleCommentSubmit}>
+          <Text style={styles.buttonText}>Post</Text>
+        </Pressable>
+      </View>
+      {/* </KeyboardAvoidingView> */}
+      {/* </KeyboardAwareScrollView> */}
+    </>
+  )
 }
 
 const styles = StyleSheet.create({
     container: {
       flex: 1,
-      paddingTop: 35
+      paddingTop: 35,
+      marginBottom: 100,
+    },
+    addBottomSpace: {
+      marginBottom: 30,
+    },
+    header: {
+      flexDirection: 'row',
+      marginTop: 25,
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
     },
     back: {
       paddingLeft: 18,
-      paddingBottom: 20,
-      marginTop: 25,
+    },
+    bookmark: {
+      marginRight: 22,
+      paddingTop: 6,
     },
     imageContainer: {
       alignItems: 'center'
@@ -132,10 +206,11 @@ const styles = StyleSheet.create({
     text: {
       fontSize: 12,
     },
-    commentSection: {
-      padding: 22,
-      borderTopWidth: 1,
-      borderTopColor: '#ccc',
+  commentHeader: {
+      marginHorizontal: 20,
+      borderBottomWidth: 1,
+      borderBottomColor: '#ccc',
+      marginBottom: 20,
   },
   commentTitle: {
       fontWeight: 'bold',
@@ -144,18 +219,20 @@ const styles = StyleSheet.create({
   },
   comment: {
       marginBottom: 10,
+      marginLeft: 20,
   },
   commentUser: {
       fontWeight: 'bold',
   },
     commentInputSection: {
       flexDirection: 'row',
-      paddingBottom: 15,
       paddingHorizontal: 12,
       borderTopWidth: 1,
       borderTopColor: '#ccc',
-      marginBottom: 0,
-      paddingTop: 14
+      marginBottom: 30,
+      paddingTop: 14,
+      position:'absolute',
+      bottom: 0,
   },
   commentInput: {
       flex: 1,
@@ -170,7 +247,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingHorizontal: 10,
     borderRadius: 12,
-    backgroundColor: 'orange'
+    backgroundColor: '#ed800c'
   },
   buttonText: {
     color: 'white',

@@ -1,9 +1,9 @@
 import React, { useEffect, useState} from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import { router } from 'expo-router'
 import { auth, db } from '../_layout'
 import { doc, getDoc } from 'firebase/firestore';
-
+import { Ionicons } from '@expo/vector-icons';
 
 const ProfileScreen = () => {
   const [username, setUsername] = useState('');
@@ -41,13 +41,21 @@ const ProfileScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Image source = {require('../../assets/profileicon.png')} style = {styles.profileicon}/>
+      <Text style={styles.usernameText}>@{username}</Text>
       <Text style={styles.emailText}>Logged-in to: {auth.currentUser?.email}</Text>
-      <Text style={styles.usernameText}>Username: {username}</Text>
+      <TouchableOpacity
+        style = {styles.button}
+        onPress={() => router.push('/bookmarks')}
+      >
+        <Ionicons name="bookmark-outline" size={24} color="black" style = {styles.icon}/>
+        <Text style={styles.buttonText}>View Bookmarks</Text>
+      </TouchableOpacity>
       <TouchableOpacity
         style={styles.button}
         onPress={handleSignout}
       >
-        <Text style={styles.buttonText}>Sign Out</Text>
+        <Text style={[styles.buttonText, { color: 'red' }]}>Sign Out</Text>
       </TouchableOpacity>
     </View>
   );
@@ -59,21 +67,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  emailText: {
-    fontSize: 16,
+  profileicon: {
+    width: 100,
+    height: 100,
     marginBottom: 10,
   },
   usernameText: {
+    fontSize: 16,
+    marginBottom: 30,
+    color: '#ed800c',
+    fontWeight: 'bold',
+  },
+  emailText: {
     fontSize: 16,
     marginBottom: 10,
   },
   button: {
     backgroundColor: 'white',
-    width: '60%',
+    width: '80%',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 20,
+    flexDirection: 'row'
+  },
+  icon: {
+    marginRight: 10,
   },
   buttonText: {
     color: 'black',

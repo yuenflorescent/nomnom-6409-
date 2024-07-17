@@ -4,7 +4,7 @@ import { AntDesign } from '@expo/vector-icons';
 
 function TabBar({ state, descriptors, navigation }) {
 
-  const primarycolour = 'orange'
+  const primarycolour = '#ed800c'
   const greycolour = 'grey'
 
   const icons = {
@@ -12,11 +12,23 @@ function TabBar({ state, descriptors, navigation }) {
     post: (props) => <AntDesign name="plussquare" size={26} color={greycolour} {...props}/>,
     profile: (props) => <AntDesign name="user" size={26} color={greycolour} {...props}/>,
 
-  }
+  };
+
+    // Get the current route name
+    const currentRouteName = state.routes[state.index].name;
+
+    // Check if the current route is 'postdetails'
+    if (currentRouteName === 'postdetails' || currentRouteName === 'bookmarks') {
+      return null;
+    }
+  
   return (
     <View style={styles.tabBar}>
       {state.routes.map((route, index) => {
         if (route.name === 'postdetails') {
+          return null; // Skip rendering PostDetails tab
+        }
+        if (route.name === 'bookmarks') {
           return null; // Skip rendering PostDetails tab
         }
         

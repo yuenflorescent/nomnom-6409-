@@ -27,7 +27,7 @@ const Post = () => {
     searchQueries: []
   })
 
-  const pickImage = async() => {
+  const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -44,7 +44,7 @@ const Post = () => {
     if (form.image === '') {
       return Alert.alert("You Didn't Upload An Image :(");
     }
-    
+
     const storage = getStorage();
     const uniqueImageName = `${auth.currentUser?.uid}-${uuid.v4()}`; // Create a unique identifier
     const storageRef = ref(storage, uniqueImageName);
@@ -62,10 +62,10 @@ const Post = () => {
         xhr.open("GET", uri, true);
         xhr.send(null);
       });
-    
+
       return blob;
     };
-    
+
     const imageBlob: Blob = await getBlobFroUri(form.image);
     const uploadTask = uploadBytesResumable(storageRef, imageBlob);
 
@@ -81,100 +81,104 @@ const Post = () => {
           break;
       }
     },
-    (error: any) => {
-      switch (error.code) {
-        case 'storage/object-not-found':
-          // File doesn't exist
-          break;
-        case 'storage/unauthorized':
-          // User doesn't have permission to access the object
-          break;
-        case 'storage/canceled':
-          // User canceled the upload
-          break;
-        case 'storage/unknown':
-          // Unknown error occurred, inspect the server response
-          break;
-      }
-    },
-    () => {
-      getDownloadURL(uploadTask.snapshot.ref)
-      .then( async (downloadURL) => {
-        const docRef = await addDoc(collection(db, "posts"),{
-          url: downloadURL,
-          userID: auth.currentUser?.uid,
-          image: form.image,
-          title: form.title,
-          caption: form.caption,
-          address: form.address,
-          likes: form.likes,
-          post_time: serverTimestamp(),
-          searchQueries: form.title.trim().split(" ").map(s => s.toLowerCase()),
-        })
-        console.log("Success!", docRef.id);
-      });
-      
-      ({
-        image: '',
-        title: '',
-        caption: '',
-        address: '',
-        likes: 0,
-      });
-      router.push('/home');
+      (error: any) => {
+        switch (error.code) {
+          case 'storage/object-not-found':
+            // File doesn't exist
+            break;
+          case 'storage/unauthorized':
+            // User doesn't have permission to access the object
+            break;
+          case 'storage/canceled':
+            // User canceled the upload
+            break;
+          case 'storage/unknown':
+            // Unknown error occurred, inspect the server response
+            break;
+        }
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref)
+          .then(async (downloadURL) => {
+            const docRef = await addDoc(collection(db, "posts"), {
+              url: downloadURL,
+              userID: auth.currentUser?.uid,
+              image: form.image,
+              title: form.title,
+              caption: form.caption,
+              address: form.address,
+              likes: form.likes,
+              post_time: serverTimestamp(),
+              searchQueries: form.title.trim().split(" ").map(s => s.toLowerCase()),
+            })
+            console.log("Success!", docRef.id);
+          });
+
+        // Reset form fields
+        setForm({
+          image: '',
+          title: '',
+          caption: '',
+          address: '',
+          likes: 0,
+          searchQueries: []
+        });
+        router.push('/home');
       }
     )
   }
 
   return (
 
-    <KeyboardAvoidingView behavior = 'padding' keyboardVerticalOffset={400} className="bg-primary h-full items-center">
-        {form.image !== '' ? (
+    <KeyboardAvoidingView behavior='padding' keyboardVerticalOffset={400} className="bg-primary h-full items-center">
+      {form.image !== '' ? (
+        <TouchableOpacity className='mt-20 mb-12 justify-center items-center aspect-square h-1/3 rounded-xl' onPress={pickImage}>
           <Image
-            className="mt-10 mb-10 w-2/3 h-1/3 rounded-xl"
-            source={{uri: form.image}}
+            className="w-full h-full rounded-xl"
+            source={{ uri: form.image }}
             resizeMode='contain'
           />
-        ) : (
-          <CustomButton 
-          title= "Click to Import Image!"
-          handlePress= {pickImage}
-          containerStyles= "mt-16 mb-10 w-2/3 h-1/3 p-10 rounded-xl bg-orange"
-          textStyles= "text-2xl text-center font-Black text-white"
-          isLoading={undefined}        
-        />         
-        )}
+        </TouchableOpacity>
+      ) : (
+        <CustomButton
+          title="Click to Import Image!"
+          handlePress={pickImage}
+          containerStyles="mt-16 mb-10 w-2/3 h-1/3 p-10 rounded-xl bg-orange"
+          textStyles="text-2xl text-center font-Black text-white"
+          isLoading={undefined}
+        />
+      )}
 
-      <FormField 
-      title='Title Your Review' 
-      value= {form.title}
-      placeholder= 'Give your review a title!'
-      handleChangeText={(e: string) => setForm({ ...form, title: e })}
-      otherStyles={undefined} 
+      <FormField
+        title='Title Your Review'
+        value={form.title}
+        placeholder='Give your review a title!'
+        handleChangeText={(e: string) => setForm({ ...form, title: e })}
+        otherStyles={undefined}
       />
 
-      <FormField 
-      title='Review Your Nom' 
-      value= {form.caption}
-      placeholder= 'Tell people how you feel about this place!'
-      handleChangeText={(e: string) => setForm({ ...form, caption: e })}
-      otherStyles= "mt-5"
+      <FormField
+        title='Review Your Nom'
+        value={form.caption}
+        placeholder='Tell people how you feel about this place!'
+        handleChangeText={(e: string) => setForm({ ...form, caption: e })}
+        otherStyles="mt-5"
       />
 
-      <FormField 
-      title='Address (Optional)' 
-      value= {form.address}
-      placeholder= ''
-      handleChangeText={(e: string) => setForm({ ...form, address: e })}
-      otherStyles= "mt-5"
+      <FormField
+        title='Address (Optional)'
+        value={form.address}
+        placeholder=''
+        handleChangeText={(e: string) => setForm({ ...form, address: e })}
+        otherStyles="mt-5"
       />
 
-      <CustomButton 
-      title= "POST" 
-      handlePress={uploadPost} 
-      containerStyles= "mt-10 w-2/6 bg-orange" 
-      textStyles= "text-white font-black" 
-      isLoading={undefined}
+      <CustomButton
+        title="POST"
+        handlePress={uploadPost}
+        containerStyles="mt-10 w-2/6 bg-orange"
+        textStyles="text-white font-black"
+        isLoading={undefined}
       />
 
     </KeyboardAvoidingView>

@@ -3,7 +3,6 @@
     "version": ">= 9.1.0"
   },
   "build": {
-<<<<<<< Updated upstream
     "preview": {
       "android": {
         "buildType": "apk"
@@ -21,21 +20,5 @@
       "distribution": "internal"
     },
     "production": {}
-=======
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "ios": {
-        "simulator": true
-      }
-    },
-    "preview": {
-      "distribution": "internal"
-    },
-    "production": {}
-  },
-  "submit": {
-    "production": {}
->>>>>>> Stashed changes
   }
 }

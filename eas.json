@@ -3,6 +3,7 @@
     "version": ">= 9.1.0"
   },
   "build": {
+<<<<<<< Updated upstream
     "preview": {
       "android": {
         "buildType": "apk"

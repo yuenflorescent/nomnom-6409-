@@ -22,6 +22,7 @@
       "package": "com.yuenflorescent.nomnom"
     },
     "web": {
+<<<<<<< Updated upstream
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },

@@ -34,6 +34,11 @@
       "router": {
         "origin": false
       },
+=======
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+>>>>>>> Stashed changes
       "eas": {
         "projectId": "c6ebeb63-941c-4429-b6f4-cb752ff27cc3"
       }

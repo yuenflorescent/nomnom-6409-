@@ -3,7 +3,7 @@ import React, { useState, useEffect} from "react";
 import { StyleSheet, View, Text, Image, KeyboardAvoidingView, TextInput, FlatList, ScrollView, Pressable, TouchableOpacity } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { collection, addDoc, query, where, getDocs, serverTimestamp, orderBy, doc, getDoc, deleteDoc } from 'firebase/firestore';
-import { router, useLocalSearchParams } from 'expo-router';
+import { Link, router, useLocalSearchParams } from 'expo-router';
 import { db, auth } from '../_layout';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
@@ -11,8 +11,21 @@ export default function PostDetails({  }) {
 
     const item: any = useLocalSearchParams();
     const [comment, setComment] = useState('');
+    const [caption, setCaption]: any = useState([]);
     const [comments, setComments]: any = useState([]);
     const [isBookmarked, setIsBookmarked] = useState(false);
+
+    const splitCaption = () => {
+      const postcaption = item.caption;
+      const captionArr = postcaption.trim().split(" ");
+      // captionArr.forEach((word: any) => {
+      //   if (word.startsWith("#")) {
+      //     word = <Link href={{pathname: "/hashtag/[tag]", params: {tag: word}}} className='text-sky-600'>${word}</Link>;
+      //   }
+      // });
+      // // const result:string = captionArr.join(" ");
+      setCaption(captionArr);
+    }
 
     const checkBookmarkStatus = async () => {
       try {
@@ -44,6 +57,7 @@ export default function PostDetails({  }) {
   useEffect(() => {
     fetchComments();
     checkBookmarkStatus();
+    splitCaption();
   }, [item.id]);
 
   const handleCommentSubmit = async () => {
@@ -121,7 +135,17 @@ export default function PostDetails({  }) {
               <View style={styles.textContainer}>
                 <Text style={styles.title}>{item.title} </Text>
                 <Text style={styles.address}>📍Address: {item.address}</Text>
-                <Text>{item.caption} </Text>
+                <View>
+                  <Text>
+                  {caption.map((word: string, index: number) =>
+                    word.startsWith('#') ? (
+                      <Link key={index} href={{pathname: "/hashtag/[tag]", params: {tag: word}}} className='text-sky-600'>{word} </Link>
+                    ) : (
+                      <Text key={index}>{word} </Text>
+                    ) 
+                  )}
+                  </Text>
+                </View>
               </View>
               <View style={styles.commentHeader}>
                 <Text style={styles.commentTitle}>Comments</Text>

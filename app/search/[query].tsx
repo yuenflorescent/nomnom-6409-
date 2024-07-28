@@ -24,8 +24,8 @@ const Search = () => {
   const [posts, setPosts] = useState<Post[]>([]);
 
   const searchPosts = async (input:any) => {
-    const arr: any = []
-    const refinedQuery: string[] = input.toLowerCase().split("|").slice(0, 20)
+    const arr: any = [];
+    const refinedQuery = input.toLowerCase().split(" ").slice(0, 20);
     const q = query(postsRef, where("searchQueries", "array-contains-any", refinedQuery));
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
@@ -56,6 +56,12 @@ const Search = () => {
         <SearchBar initialQuery = {userQuery} />
         <Text className='font-Monaco font-bold text-3xl mt-6 px-4'> 
           Search Results For {userQuery}:
+        </Text>
+        <Text
+        onPress={() => router.back()}
+        className='font-Monaco font-bold mt-3 px-4'
+        >
+          Go Back
         </Text>
         </View>
       </>

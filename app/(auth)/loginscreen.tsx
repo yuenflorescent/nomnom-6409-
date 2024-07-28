@@ -66,8 +66,8 @@ const LoginScreen = () => {
                     source={require('../../assets/alternate_2.png')}
                     className="w-[300px] h-[50px] -mt-5"
                 />
-                <Text className='font-OutfitSB text-white text-3xl mb-4 mt-10'>
-                    Login
+                <Text className='font-monaco font-semibold text-white text-3xl mb-4 mt-10'>
+                    Welcome Back!
                 </Text>
             </View>
                 <FormField 

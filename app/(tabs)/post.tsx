@@ -1,6 +1,6 @@
 import { View, Text, KeyboardAvoidingView, TouchableOpacity, Image, Alert, ScrollView } from 'react-native'
 import React, { useState } from 'react'
-import { router } from 'expo-router'
+import { router, Link } from 'expo-router'
 import uuid from 'react-native-uuid'; // Import react-native-uuid
 
 
@@ -24,7 +24,8 @@ const Post = () => {
     caption: '',
     address: '',
     likes: 0,
-    searchQueries: []
+    searchQueries: [],
+    hashtags:[]
   })
 
   const pickImage = async () => {
@@ -38,6 +39,16 @@ const Post = () => {
       setForm({ ...form, image: result.assets[0].uri })
     }
   }
+
+  // function toHyperlink (postcaption: string) {
+  //   const captionArr: string[] = postcaption.trim().split(" ");
+  //   captionArr.forEach((word) => {
+  //     if (word.startsWith("#"))
+  //     word = `${<Link href={{pathname: "/hashtag/[tag]", params: {tag: word}}} className='text-sky-600'>${word}</Link>}`
+  //   });
+  //   const result:string = captionArr.join(" ");
+  //   return result;
+  // }
 
 
   const uploadPost = async () => {
@@ -110,6 +121,7 @@ const Post = () => {
               likes: form.likes,
               post_time: serverTimestamp(),
               searchQueries: form.title.trim().split(" ").map(s => s.toLowerCase()),
+              hashtags: form.caption.trim().split(" ").filter(s => s.startsWith("#"))
             })
             console.log("Success!", docRef.id);
           });
@@ -121,7 +133,8 @@ const Post = () => {
           caption: '',
           address: '',
           likes: 0,
-          searchQueries: []
+          searchQueries: [],
+          hashtags: []
         });
         router.push('/home');
       }

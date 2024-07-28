@@ -2,7 +2,7 @@ import { View, Text, ScrollView, Image, FlatList, StyleSheet, TouchableOpacity, 
 import { db, auth } from '../_layout'
 import { collection, query, getDocs, orderBy, limit, doc, addDoc, deleteDoc, updateDoc, where, getDoc } from "firebase/firestore"
 import React, { useEffect, useState } from 'react'
-import { router, useFocusEffect } from 'expo-router';
+import { router, Link, useFocusEffect } from 'expo-router';
 import { AntDesign } from '@expo/vector-icons';
 import SearchBar from '../../components/SearchBar';
 
@@ -12,10 +12,12 @@ interface Post {
   url: string;
   title: string;
   likes: number;
+  hashtags: string[];
 }
 
 const Home = () => {
   const [posts, setPosts] = useState<Post[]>([]);
+  const [hashtags, setHashtags] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [likedPosts, setLikedPosts] = useState<{ [key: string]: boolean }>({});
 
@@ -26,12 +28,44 @@ const Home = () => {
     )
 
     const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
+    const hashtagQuery: {hashtag: string, postnumber: number}[] = []
+
+    querySnapshot.forEach( async (doc) => {
       arr.push({ id: doc.id, ...doc.data() });
-      // const ind: number = arr.findIndex((p: { id: string; }) => p.id === doc.id)
+      const dRef = doc.ref
+      const dSnap = await getDoc(dRef);
+      const hashtagArr: string[] = dSnap.get("hashtags");
+      const numofHashtags = hashtagArr.length;
+
+      // checking if there are any hashtags
+      if (numofHashtags > 0) {
+        for (let i=0; i < numofHashtags; i++) {
+          const curr = hashtagArr[i];
+          if (!(hashtagQuery.some(({hashtag}) => hashtag == curr))) {
+            hashtagQuery.push({hashtag: curr, postnumber: 1});
+          }
+          else {
+            const currObject = hashtagQuery[hashtagQuery.findIndex(x => x.hashtag === curr)];
+            currObject.postnumber = currObject.postnumber + 1;
+          }
+        }
+      }
+
+      const sortedQuery = hashtagQuery.sort((x, y) => {
+        if (x.postnumber > y.postnumber) { return 1 }
+        else if (x.postnumber < y.postnumber) { return -1 }
+        else { return 0 }
+      })
+      if (sortedQuery.length > 10) {
+        sortedQuery.slice(0, 9);
+      }
+      const finalQuery = sortedQuery.map(x => x.hashtag)
+
+      // // const ind: number = arr.findIndex((p: { id: string; }) => p.id === doc.id)
       // updateDoc(doc.ref, {
-      //   searchQueries: arr[ind].title.trim().split(" ").map((s: string) => s.toLowerCase()),
+      //   hashtags: [],
       // })
+      setHashtags(finalQuery);
     });
     setPosts(arr)
 
@@ -142,7 +176,41 @@ const Home = () => {
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.flatListContent}
         ListHeaderComponent={() => (
-          <SearchBar initialQuery={''} />
+          <View>
+            <SearchBar initialQuery={''} />
+            <Text className='font-Monaco font-bold text-3xl px-4 mt-5'>
+                  Popular
+            </Text>
+            <FlatList
+              horizontal
+              data={hashtags}
+              renderItem={({item} : {item: string}) => (
+                <View className='justify-start ml-4'>
+                  <TouchableOpacity 
+                  onPress={() => {
+                    router.push({pathname: '/hashtag/[tag]', params: {tag: item}});
+                  }}
+                  className='rounded-full bg-zinc-300 bg-contain mt-6 mr-2 mb-3 size-auto'
+                  style={styles.hashtagBorder}
+                  >
+                    <Text className='text-center' style={styles.hashtagText}>
+                      {(item.length <= 15) ? (
+                        item
+                      ) : (
+                        item.substring(0, 12).concat('...')
+                      )}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              // ListHeaderComponent= {() => (
+              //   <Text className='font-Monaco font-bold text-3xl px-4 mt-5'>
+              //     Popular
+              //   </Text>
+              // )}
+              // numColumns={4}
+            />
+          </View>
         )}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -158,6 +226,13 @@ const styles = StyleSheet.create({
     marginBottom: 100,
   },
   flatListContent: {
+  },
+  hashtagBorder: {
+    borderWidth: 9,
+    borderColor: 'rgb(212 212 216)',
+  },
+  hashtagText: {
+    color: 'rgb(30 58 138)',
   },
   row: {
     flex: 1,
